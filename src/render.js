@@ -191,6 +191,7 @@ function productSection(p, i, left) {
   ${specs ? `<dl class="specs">${specs}</dl>` : ''}
   <div class="buy-row">${buy}${wa ? `<a class="btn btn-ghost" href="${esc(wa)}" target="_blank" rel="noopener">See it on video call</a>` : ''}</div>
   <ul class="assure">
+    <li><b>Lab-tested certificate included in the parcel</b></li>
     <li>Held for you for ${site.reservationMinutes} minutes while you pay</li>
     <li>Pay by UPI — scan or tap, amount filled in</li>
     <li>Track your order online, from payment to delivery</li>
@@ -205,6 +206,10 @@ function faqItems() {
     [
       'Are these beads genuine?',
       'Yes. Every bead is a natural, Nepal-origin rudraksha. Each Gauri Shankar grew joined on the tree — nothing is glued or carved. If what you receive does not match what is shown here, you can return it.',
+    ],
+    [
+      'Do I get a certificate?',
+      'Yes. Every bead has been lab tested, and a copy of its lab certificate is packed with your order — proof that the bead you received is genuine.',
     ],
     [
       'Why do you only accept UPI?',
