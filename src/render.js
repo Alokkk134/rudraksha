@@ -167,9 +167,16 @@ function head(title, description) {
 function stockLine(p, left) {
   if (left === 0) return `<p class="stock is-out">Sold — this bead has found its home</p>`;
   if (p.stock === 1) return `<p class="stock is-one"><span class="pulse"></span>Only piece. Once sold, it's gone.</p>`;
-  const dots = Array.from({ length: p.stock }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('');
-  return `<div class="stock"><span class="dots" aria-hidden="true">${dots}</span><span><b>${left} of ${p.stock}</b> left</span></div>`;
+  // One dot per bead reads well for a handful; past that it's just clutter.
+  const dots =
+    p.stock <= 12
+      ? `<span class="dots" aria-hidden="true">${Array.from({ length: p.stock }, (_, i) => `<i class="${i < left ? 'on' : ''}"></i>`).join('')}</span>`
+      : '';
+  return `<div class="stock">${dots}<span><b>${left} of ${p.stock}</b> left</span></div>`;
 }
+
+// Replace {stock} and {left} in config text with the live numbers.
+const fillCounts = (text, p, left) => String(text).replace(/\{stock\}/g, p.stock).replace(/\{left\}/g, left);
 
 function productSection(p, i, left) {
   const specs = Object.entries(p.specs)
@@ -188,16 +195,16 @@ function productSection(p, i, left) {
   <div class="tag" aria-hidden="true"><span>No. 0${i + 1}</span><b>${esc(p.shortName)}</b><span>${p.stock === 1 ? '1 of 1' : `${p.stock} pieces`} · Nepal</span></div>
 </div>
 <div class="product-info">
-  <p class="eyebrow">${esc(p.badge)}</p>
+  <p class="eyebrow">${esc(p.stock === 1 ? 'Only piece' : p.badge)}</p>
   <h3 class="product-name">${esc(p.name)}</h3>
   <p class="hindi" lang="hi">${esc(p.nameHindi)}</p>
   <p class="price">${inr(p.price)}<small>${site.shippingFee ? ' + shipping' : ' · free shipping'}</small></p>
   ${stockLine(p, left)}
-  <p class="lead">${esc(p.summary)}</p>
-  ${p.description.map((d) => `<p>${esc(d)}</p>`).join('')}
+  <p class="lead">${esc(fillCounts(p.summary, p, left))}</p>
+  ${p.description.map((d) => `<p>${esc(fillCounts(d, p, left))}</p>`).join('')}
   <div class="points">
-    ${p.benefits?.length ? `<div><h4>Benefits <span>(as per tradition)</span></h4><ul>${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
-    ${p.whyUs?.length ? `<div><h4>Why buy from us</h4><ul>${p.whyUs.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
+    ${p.benefits?.length ? `<div><h4>Benefits <span>(as per tradition)</span></h4><ul>${p.benefits.map((b) => `<li>${esc(fillCounts(b, p, left))}</li>`).join('')}</ul></div>` : ''}
+    ${p.whyUs?.length ? `<div><h4>Why buy from us</h4><ul>${p.whyUs.map((b) => `<li>${esc(fillCounts(b, p, left))}</li>`).join('')}</ul></div>` : ''}
   </div>
   ${specs ? `<dl class="specs">${specs}</dl>` : ''}
   <div class="buy-row">${buy}${wa ? `<a class="btn btn-ghost" href="${esc(wa)}" target="_blank" rel="noopener">See it on video call</a>` : ''}</div>
@@ -273,6 +280,7 @@ function renderPage(name, data = {}) {
   if (name === 'index.html') {
     const { products, lefts } = data;
     const total = products.reduce((s, p) => s + p.stock, 0);
+    ctx.heroTagCount = products[0].stock === 1 ? '1 of 1' : `${products[0].stock} pieces`;
     const totalLeft = lefts.reduce((s, n) => s + n, 0);
     const minPrice = Math.min(...products.map((p) => p.price));
     Object.assign(ctx, {

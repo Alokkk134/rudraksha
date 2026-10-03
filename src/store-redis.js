@@ -17,6 +17,17 @@ module.exports = function redisBackend(url, token) {
       await redis.set(P + 'order:' + order.id, order);
       await redis.zadd(P + 'orders', { score: order.createdAt, member: order.id });
     },
+    async remove(id) {
+      await redis.del(P + 'order:' + id);
+      await redis.zrem(P + 'orders', id);
+    },
+    async getSettings(keys) {
+      if (!keys.length) return [];
+      return redis.mget(...keys.map((k) => P + 'setting:' + k));
+    },
+    async setSetting(key, value) {
+      await redis.set(P + 'setting:' + key, value);
+    },
     async list() {
       const ids = await redis.zrange(P + 'orders', 0, -1);
       if (!ids.length) return [];

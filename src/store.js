@@ -14,7 +14,16 @@ function pickBackend() {
   const missing = async () => {
     throw Object.assign(new Error('The shop is not accepting orders yet. Please try again later.'), { status: 503 });
   };
-  return { kind: 'none', load: async () => null, list: async () => [], save: missing, lock: missing };
+  return {
+    kind: 'none',
+    load: async () => null,
+    list: async () => [],
+    getSettings: async (keys) => keys.map(() => null),
+    save: missing,
+    lock: missing,
+    remove: missing,
+    setSetting: missing,
+  };
 }
 const backend = pickBackend();
 
@@ -99,4 +108,30 @@ function withLock(name, fn) {
   return backend.lock(name, fn);
 }
 
-module.exports = { create, get, update, all, findByUtr, heldQty, withLock, kind: backend.kind };
+async function remove(id) {
+  await backend.remove(id);
+}
+
+// Stock counts set from the admin page. null means "use the number in config.js".
+async function getStockOverrides(slugs) {
+  const values = await backend.getSettings(slugs.map((s) => 'stock:' + s));
+  return values.map((v) => (v == null ? null : Number(v)));
+}
+
+async function setStock(slug, stock) {
+  await backend.setSetting('stock:' + slug, stock);
+}
+
+module.exports = {
+  create,
+  get,
+  update,
+  remove,
+  all,
+  findByUtr,
+  heldQty,
+  withLock,
+  getStockOverrides,
+  setStock,
+  kind: backend.kind,
+};

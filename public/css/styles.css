@@ -1626,6 +1626,52 @@ address {
 .stock-card b {
   font: 400 2.2rem/1.1 var(--serif);
 }
+.stock-edit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line-soft);
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.stock-edit input {
+  width: 80px;
+  min-height: 40px;
+}
+.order-actions .spacer {
+  flex: 1;
+}
+.link.danger {
+  color: var(--danger);
+}
+.edit-form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.7rem 1rem;
+}
+.edit-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.edit-form input,
+.edit-form select {
+  min-height: 42px;
+}
+.edit-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+}
+@media (max-width: 640px) {
+  .edit-form {
+    grid-template-columns: 1fr;
+  }
+}
 .tabs {
   display: flex;
   gap: 0.4rem;

@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 const express = require('express');
 
-const { site, products } = require('./src/config');
+const { site, products: baseProducts } = require('./src/config');
 const store = require('./src/store');
 const { appLinks, qrSvg, qrPng } = require('./src/upi');
 const { renderPage } = require('./src/render');
@@ -36,7 +36,12 @@ app.use((req, res, next) => {
 
 // ---------- helpers ----------
 
-const productBySlug = (slug) => products.find((p) => p.slug === slug) || null;
+// Products with the stock count set from the admin page (falls back to config.js).
+async function getProducts() {
+  const overrides = await store.getStockOverrides(baseProducts.map((p) => p.slug));
+  return baseProducts.map((p, i) => (overrides[i] == null ? p : { ...p, stock: overrides[i] }));
+}
+const productBySlug = async (slug) => (await getProducts()).find((p) => p.slug === slug) || null;
 const available = async (p) => Math.max(0, p.stock - (await store.heldQty(p.slug)));
 
 // Express 4 doesn't catch errors from async handlers on its own.
@@ -122,11 +127,12 @@ async function orderFromRequest(req, res) {
 // ---------- pages ----------
 
 app.get('/', h(async (req, res) => {
+  const products = await getProducts();
   const lefts = await Promise.all(products.map(available));
   res.send(renderPage('index.html', { products, lefts }));
 }));
 app.get('/checkout/:slug', h(async (req, res) => {
-  const p = productBySlug(req.params.slug);
+  const p = await productBySlug(req.params.slug);
   if (!p) return res.redirect('/');
   res.send(renderPage('checkout.html', { product: p, available: await available(p) }));
 }));
@@ -140,6 +146,7 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false, maxAge: '
 // ---------- public API ----------
 
 app.get('/api/products', h(async (req, res) => {
+  const products = await getProducts();
   const lefts = await Promise.all(products.map(available));
   res.json(products.map((p, i) => ({ slug: p.slug, name: p.name, price: p.price, available: lefts[i] })));
 }));
@@ -148,7 +155,7 @@ app.post('/api/orders', h(async (req, res) => {
   if (rateLimit('order:' + req.ip, 8, 60 * 60 * 1000)) {
     return res.status(429).json({ error: 'Too many orders from your connection. Please try again later.' });
   }
-  const p = productBySlug(req.body.slug);
+  const p = await productBySlug(req.body.slug);
   if (!p) return res.status(400).json({ error: 'Unknown product.' });
 
   const { errors, data } = validateOrder(req.body);
@@ -244,7 +251,7 @@ app.post('/api/orders/:id/utr', h(async (req, res) => {
   }
 
   // If the reservation lapsed, the bead may have gone to someone else meanwhile.
-  const p = productBySlug(o.productSlug);
+  const p = await productBySlug(o.productSlug);
   const stockConflict = o.status === 'expired' && (await available(p)) < o.qty;
 
   const updated = await store.update(o.id, { status: 'verifying', utr, utrAt: Date.now(), stockConflict });
@@ -302,12 +309,34 @@ app.post('/api/admin/logout', (req, res) => {
 
 app.get('/api/admin/orders', requireAdmin, h(async (req, res) => {
   const orders = await store.all();
+  const products = await getProducts();
   const lefts = await Promise.all(products.map(available));
   res.json({
     orders: orders.filter((o) => o.status !== 'replaced'),
     stock: products.map((p, i) => ({ slug: p.slug, name: p.name, stock: p.stock, available: lefts[i] })),
+    states: STATES,
     upiId: site.upiId,
   });
+}));
+
+app.post('/api/admin/stock', requireAdmin, h(async (req, res) => {
+  const p = await productBySlug(req.body.slug);
+  if (!p) return res.status(400).json({ error: 'Unknown product.' });
+  const stock = Number(req.body.stock);
+  if (!Number.isInteger(stock) || stock < 0 || stock > 999) {
+    return res.status(400).json({ error: 'Stock must be a whole number from 0 to 999.' });
+  }
+  // Can't go below what's already sold or reserved.
+  const result = await store.withLock('stock:' + p.slug, async () => {
+    const held = await store.heldQty(p.slug);
+    if (stock < held) return { held };
+    await store.setStock(p.slug, stock);
+    return { ok: true };
+  });
+  if (!result.ok) {
+    return res.status(409).json({ error: `${result.held} are already sold or reserved, so stock can't be lower than ${result.held}. Cancel or delete those orders first.` });
+  }
+  res.json({ slug: p.slug, stock });
 }));
 
 const TRANSITIONS = {
@@ -320,6 +349,23 @@ const TRANSITIONS = {
 app.post('/api/admin/orders/:id', requireAdmin, h(async (req, res) => {
   const o = await store.get(req.params.id);
   if (!o) return res.status(404).json({ error: 'Order not found.' });
+
+  if (req.body.action === 'delete') {
+    await store.remove(o.id);
+    return res.json({ deleted: o.id });
+  }
+
+  if (req.body.action === 'edit') {
+    const { errors, data } = validateOrder(req.body);
+    if (Object.keys(errors).length) return res.status(400).json({ error: Object.values(errors)[0], fields: errors });
+    const updated = await store.update(o.id, {
+      ...data,
+      courier: clean(req.body.courier, 60) || null,
+      tracking: clean(req.body.tracking, 60) || null,
+    });
+    return res.json({ order: updated });
+  }
+
   const t = TRANSITIONS[req.body.action];
   if (!t) return res.status(400).json({ error: 'Unknown action.' });
   if (!t.from.includes(o.status)) return res.status(409).json({ error: `Can't ${req.body.action} an order that is ${o.status}.` });

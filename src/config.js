@@ -37,7 +37,7 @@ const products = [
     shortName: 'Gauri Shankar Ganesh',
     price: 7700,
     stock: 1,
-    badge: 'Only piece',
+    badge: 'Rare', // shows as "Only piece" while stock is 1
     summary: 'Two rudraksha joined together, with a small third bead on top. It is very hard to find.',
     description: [
       'The two big beads are Shiva and Parvati. The small one on top is Ganesha. A whole family in one bead.',
@@ -50,7 +50,7 @@ const products = [
     ],
     // Shown under "Why buy from us"
     whyUs: [
-      'You get this exact bead — we have only one',
+      'You get the bead shown in the photo',
       'Natural from Nepal, not glued',
       'Lab certificate comes with it',
     ],
@@ -85,7 +85,8 @@ const products = [
     whyUs: [
       'Natural from Nepal, not glued',
       'Lab certificate with every bead',
-      'Only 9 pieces available',
+      // {stock} and {left} are filled in with the live numbers
+      'Only {stock} pieces in total',
     ],
     specs: {
       Origin: 'Nepal',

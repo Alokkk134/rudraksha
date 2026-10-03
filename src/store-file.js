@@ -19,6 +19,9 @@ module.exports = function fileBackend() {
     fs.renameSync(tmp, file);
   }
 
+  const settingsFile = path.join(dir, 'settings.json');
+  const settings = fs.existsSync(settingsFile) ? JSON.parse(fs.readFileSync(settingsFile, 'utf8')) : {};
+
   const clone = (o) => (o ? structuredClone(o) : null);
   const locks = new Map();
 
@@ -33,6 +36,17 @@ module.exports = function fileBackend() {
     },
     async list() {
       return [...orders.values()].map(clone);
+    },
+    async remove(id) {
+      orders.delete(id);
+      persist();
+    },
+    async getSettings(keys) {
+      return keys.map((k) => (k in settings ? settings[k] : null));
+    },
+    async setSetting(key, value) {
+      settings[key] = value;
+      fs.writeFileSync(settingsFile, JSON.stringify(settings, null, 2));
     },
     // One process, so a promise chain per lock name is enough.
     async lock(name, fn) {
