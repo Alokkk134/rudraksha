@@ -341,6 +341,7 @@ app.use((req, res) => res.status(404).send(renderPage('404.html')));
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err);
+  if (err.status === 503) return res.status(503).json({ error: err.message });
   res.status(500).json({ error: 'Something went wrong on our side. Please try again.' });
 });
 

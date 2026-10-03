@@ -5,7 +5,18 @@ const crypto = require('crypto');
 
 const redisUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-const backend = redisUrl && redisToken ? require('./store-redis')(redisUrl, redisToken) : require('./store-file')();
+function pickBackend() {
+  if (redisUrl && redisToken) return require('./store-redis')(redisUrl, redisToken);
+  if (!process.env.VERCEL) return require('./store-file')();
+  // On Vercel the disk is read-only, so without Redis there's nowhere to keep orders.
+  // Pages still load; taking an order fails with a clear message instead of losing it.
+  console.error('[store] Upstash Redis is not connected. Connect it in Vercel → Storage, then redeploy.');
+  const missing = async () => {
+    throw Object.assign(new Error('The shop is not accepting orders yet. Please try again later.'), { status: 503 });
+  };
+  return { kind: 'none', load: async () => null, list: async () => [], save: missing, lock: missing };
+}
+const backend = pickBackend();
 
 // No 0/O/1/I so buyers can read the ID over the phone.
 const ID_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
