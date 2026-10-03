@@ -53,8 +53,8 @@ const products = [
       Weight: null, // e.g. '9.4 g'
       Certificate: null, // e.g. 'Lab report no. 12345'
     },
-    // Put photo paths here once you add them, e.g. '/images/gauri-shankar-ganesh/1.jpg'
-    images: [],
+    // Photo paths. The first one is the main photo (also used at the top of the home page).
+    images: ['/images/gauri-shankar-ganesh/1.png'],
   },
   {
     slug: 'gauri-shankar',
