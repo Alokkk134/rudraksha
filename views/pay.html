@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+<meta name="robots" content="noindex">
+</head>
+<body class="page-flow">
+{{{headerMinimal}}}
+
+<main class="wrap flow narrow">
+  <ol class="progress" aria-label="Checkout steps">
+    <li class="is-done">Details</li><li class="is-current">Pay by UPI</li><li>Confirmation</li>
+  </ol>
+
+  <p class="loading" id="loading">Loading your order…</p>
+  <p class="form-error" id="load-error" role="alert" hidden></p>
+
+  <section id="pay" hidden>
+    <div class="card pay-card">
+      <div class="pay-top">
+        <div>
+          <p class="muted small">Order <b data-f="id"></b> · <span data-f="product"></span></p>
+          <p class="pay-amount" data-f="total"></p>
+        </div>
+        <div class="timer" id="timer" aria-live="off">
+          <span class="muted small">Held for you</span>
+          <b id="timer-text">--:--</b>
+        </div>
+      </div>
+
+      <div class="pay-body">
+        <div class="pay-apps">
+          <h1 class="h-step"><span class="step-n">1</span>Pay with any UPI app</h1>
+          <ol class="desktop-only scan-steps">
+            <li>Open Google Pay, PhonePe, Paytm or any UPI app on your phone</li>
+            <li>Tap <b>Scan</b> and point it at the QR code</li>
+            <li>Check the amount is <b data-f="total"></b>, then pay</li>
+          </ol>
+          <a class="btn btn-buy btn-block mobile-only" id="pay-any" href="#">Pay <span data-f="total"></span> with UPI app</a>
+          <div class="app-row mobile-only">
+            <a class="app" id="pay-gpay" href="#">Google Pay</a>
+            <a class="app" id="pay-phonepe" href="#">PhonePe</a>
+            <a class="app" id="pay-paytm" href="#">Paytm</a>
+          </div>
+          <p class="muted small mobile-only">On your phone, the buttons open your UPI app with the amount filled in.</p>
+        </div>
+
+        <div class="pay-qr">
+          <div class="qr-frame"><img id="qr" alt="UPI QR code for this order" width="240" height="240"></div>
+          <p class="small"><b>Scan with any UPI app</b></p>
+          <a class="link small" id="qr-download" href="#" download>Save QR to phone</a>
+          <p class="muted xsmall mobile-only">Paying on this same phone? Save the QR, then in your UPI app choose “Scan QR” → upload from gallery.</p>
+        </div>
+      </div>
+
+      <div class="pay-manual">
+        <div><span class="muted small">UPI ID</span><code data-f="upi"></code><button type="button" class="copy" data-copy="upi">Copy</button></div>
+        <div><span class="muted small">Amount</span><code data-f="amount"></code><button type="button" class="copy" data-copy="amount">Copy</button></div>
+      </div>
+
+      <p class="check-note">Before you approve, check that the amount is <b data-f="total"></b>. If your app blocks the tap-to-pay link, scan the QR or pay to the UPI ID above.</p>
+    </div>
+
+    <div id="expired" class="card notice" hidden>
+      <h1>Your reservation ended</h1>
+      <p>The bead was held for {{reservationMinutes}} minutes and has been released.</p>
+      <p><b>Already paid?</b> Enter your UTR below. We'll match it and honour your order if the bead is still available, or refund you in full. <a href="/">Back to the shop</a></p>
+    </div>
+
+    <form class="card utr-card" id="utr-form" novalidate>
+      <h2 class="h-step"><span class="step-n">2</span>Paid? Enter your UTR number</h2>
+      <p class="muted">It's the 12-digit reference number shown in your UPI app after paying.</p>
+      <div class="utr-row">
+        <input id="utr" name="utr" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="e.g. 431289765012" aria-label="12-digit UTR number">
+        <button class="btn" type="submit" id="utr-submit">Submit</button>
+      </div>
+      <p class="form-error" id="utr-error" role="alert" hidden></p>
+      <details class="where">
+        <summary>Where do I find it?</summary>
+        <ul>
+          <li><b>Google Pay:</b> open the payment in history → “UPI transaction ID”</li>
+          <li><b>PhonePe:</b> History → the payment → “UTR”</li>
+          <li><b>Paytm:</b> Balance &amp; History → the payment → “UPI Ref No.”</li>
+          <li><b>FamPay / others:</b> the payment details → “UTR” or “Reference no.”</li>
+        </ul>
+      </details>
+    </form>
+
+    {{{payHelp}}}
+  </section>
+</main>
+
+<script src="/js/common.js" defer></script>
+<script src="/js/pay.js" defer></script>
+</body>
+</html>

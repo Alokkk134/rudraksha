@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+</head>
+<body>
+<div class="announce">Only {{totalBeads}} beads in this collection · Pay by UPI directly to the seller · {{shippingNote}}</div>
+{{{header}}}
+
+<main>
+  <section class="hero">
+    <div class="hero-watermark" lang="hi" aria-hidden="true">गौरी शंकर</div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <p class="eyebrow">Natural rudraksha · Nepal origin</p>
+        <h1>Grown as one,<br><em>on a single tree.</em></h1>
+        <p class="hero-sub">Genuine Gauri Shankar and Gauri Shankar Ganesh rudraksha — beads that nature joined, not glue. We have {{totalBeads}} of them in all, each priced plainly and paid for by UPI straight to the seller.</p>
+        <div class="hero-cta">
+          <a class="btn" href="#beads">See the beads · from {{minPrice}}</a>
+          <a class="btn btn-ghost" href="#buying">How buying works</a>
+        </div>
+        <ul class="proof">
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Naturally joined</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>From Nepal</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Return if not as shown</li>
+          <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Track your order online</li>
+        </ul>
+      </div>
+      <div class="hero-art">
+        <div class="arch arch-hero">{{{heroArt}}}</div>
+        <div class="tag tag-hero" aria-hidden="true"><span>No. 01</span><b>Gauri Shankar Ganesh</b><span>1 of 1 · Nepal</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="inventory" aria-label="Collection">
+    <div class="wrap inventory-inner">
+      <p class="inventory-title"><span class="big">{{totalBeads}}</span> beads. <span class="muted">That's the whole collection — {{totalLeft}} still available.</span></p>
+      <div class="inv-list">{{{inventory}}}</div>
+    </div>
+  </section>
+
+  <section class="beads" id="beads">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">The collection</p>
+        <h2>Two forms. Ten beads.</h2>
+      </header>
+      {{{products}}}
+    </div>
+  </section>
+
+  <section class="genuine" id="genuine">
+    <div class="wrap genuine-grid">
+      <div>
+        <p class="eyebrow eyebrow-light">Buy with open eyes</p>
+        <h2>How to tell a real Gauri Shankar</h2>
+        <p class="muted-light">Most fake Gauri Shankars are two ordinary beads glued together. Here is what to look for — on ours, and on any bead you are shown.</p>
+      </div>
+      <ol class="checks">
+        <li><b>The join is wood, not a line.</b> Where the beads meet, the surface flows from one into the other. A glued bead shows a thin seam or a shiny line of glue.</li>
+        <li><b>Each bead has its own lines.</b> The natural ridges (mukh) run from top to bottom on each half and meet near the join, never cut off sharply.</li>
+        <li><b>The texture is the same everywhere.</b> The bumpy surface carries right into the join. Sanding or polish around the join is a warning sign.</li>
+        <li><b>Floating and coin tests are myths.</b> Real beads can float and fakes can sink. Only an X-ray reliably shows the inside of a bead.</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="buying" id="buying">
+    <div class="wrap">
+      <header class="section-head">
+        <p class="eyebrow">How buying works</p>
+        <h2>Simple, and you can see every step</h2>
+      </header>
+      <ol class="steps">
+        <li><span class="step-n">1</span><h3>Choose and fill in your address</h3><p>Your bead is held for you for {{reservationMinutes}} minutes, so no one else can buy it while you pay.</p></li>
+        <li><span class="step-n">2</span><h3>Pay by UPI</h3><p>Tap to open Google Pay, PhonePe or Paytm, or scan the QR code. The amount is already filled in.</p></li>
+        <li><span class="step-n">3</span><h3>Enter your UTR</h3><p>Type the 12-digit reference number from your UPI app, so we can match your payment.</p></li>
+        <li><span class="step-n">4</span><h3>We confirm and ship</h3><p>Follow every step on your order page, including the courier tracking number. Dispatch in {{dispatchDays}}.</p></li>
+      </ol>
+      <aside class="why-upi">
+        <div>
+          <h3>Why we only take UPI</h3>
+          <p>We're a small seller, not a marketplace. UPI sends your money straight to us with no gateway in between. Before you approve, your UPI app shows you the name registered to <code>{{upiId}}</code>, so you always know who you are paying.</p>
+        </div>
+        <p class="never">We will never ask for your card number, UPI PIN or OTP.</p>
+      </aside>
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <div class="wrap faq-grid">
+      <header class="section-head">
+        <p class="eyebrow">Questions</p>
+        <h2>Before you buy</h2>
+        {{{faqContact}}}
+      </header>
+      <div class="faq-list">{{{faq}}}</div>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="wrap closing-inner">
+      <p lang="hi" class="closing-hindi">ॐ नमः शिवाय</p>
+      <h2>When they're gone, they're gone.</h2>
+      <p>{{totalLeft}} of {{totalBeads}} beads still available.</p>
+      <div class="hero-cta center">
+        <a class="btn btn-light" href="#beads">Choose your bead</a>
+        {{{whatsappCta}}}
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="sticky-buy" id="sticky-buy" hidden>
+  <span><b>{{totalLeft}} beads left</b><small>from {{minPrice}}</small></span>
+  <a class="btn btn-small" href="#beads">Choose yours</a>
+</div>
+
+{{{footer}}}
+<script src="/js/site.js" defer></script>
+</body>
+</html>

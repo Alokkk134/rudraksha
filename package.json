@@ -1,0 +1,20 @@
+{
+  "name": "rudra-nidhi-store",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Small UPI-paid store for genuine Nepal Gauri Shankar rudraksha",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4"
+  }
+}

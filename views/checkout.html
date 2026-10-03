@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+</head>
+<body class="page-flow">
+{{{headerMinimal}}}
+
+<main class="wrap flow">
+  <ol class="progress" aria-label="Checkout steps">
+    <li class="is-current">Details</li><li>Pay by UPI</li><li>Confirmation</li>
+  </ol>
+
+  <div class="checkout-grid">
+    <form id="checkout" class="card form" novalidate data-slug="{{slug}}" data-price="{{price}}" data-shipping="{{shippingFee}}" data-available="{{available}}" data-soldout="{{soldOut}}">
+      <h1>Where should we send it?</h1>
+      <p class="muted">After paying you'll get an order number. Use it with your mobile number to track your order anytime.</p>
+
+      <fieldset>
+        <legend>Your details</legend>
+        <div class="field">
+          <label for="name">Full name</label>
+          <input id="name" name="name" autocomplete="name" required maxlength="80">
+          <p class="err" data-for="name"></p>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label for="phone">Mobile number</label>
+            <div class="prefix"><span>+91</span><input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" required maxlength="14" placeholder="98765 43210"></div>
+            <p class="hint">For the courier only.</p>
+            <p class="err" data-for="phone"></p>
+          </div>
+          <div class="field">
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" autocomplete="email" required maxlength="120" placeholder="you@example.com">
+            <p class="hint">Only to contact you about this order.</p>
+            <p class="err" data-for="email"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Shipping address</legend>
+        <div class="field">
+          <label for="line1">House / flat number, building, street</label>
+          <input id="line1" name="line1" autocomplete="address-line1" required maxlength="150">
+          <p class="err" data-for="line1"></p>
+        </div>
+        <div class="field">
+          <label for="line2">Area, landmark <span class="optional">(optional)</span></label>
+          <input id="line2" name="line2" autocomplete="address-line2" maxlength="150">
+        </div>
+        <div class="row row-3">
+          <div class="field">
+            <label for="pincode">PIN code</label>
+            <input id="pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" required maxlength="6">
+            <p class="err" data-for="pincode"></p>
+          </div>
+          <div class="field">
+            <label for="city">City / town</label>
+            <input id="city" name="city" autocomplete="address-level2" required maxlength="60">
+            <p class="err" data-for="city"></p>
+          </div>
+          <div class="field">
+            <label for="state">State</label>
+            <select id="state" name="state" autocomplete="address-level1" required>
+              <option value="">Choose…</option>
+              {{{stateOptions}}}
+            </select>
+            <p class="err" data-for="state"></p>
+          </div>
+        </div>
+      </fieldset>
+
+      <p class="form-error" id="form-error" role="alert" hidden></p>
+      <button class="btn btn-buy btn-block" type="submit" id="submit">Continue to payment · <span data-total>{{priceText}}</span></button>
+      <p class="fine">Your bead is held for {{reservationMinutes}} minutes once you continue. You'll pay by UPI on the next page.</p>
+    </form>
+
+    <aside class="card summary" aria-label="Order summary">
+      <div class="summary-item">
+        <div class="summary-img">{{{productMedia}}}</div>
+        <div>
+          <b>{{productName}}</b>
+          <p class="hindi small" lang="hi">{{productHindi}}</p>
+          <p class="muted small">{{priceText}} each · Nepal</p>
+        </div>
+      </div>
+      <div class="qty-row" id="qty-row">
+        <span>Quantity</span>
+        <div class="stepper">
+          <button type="button" data-step="-1" aria-label="Fewer">−</button>
+          <output id="qty" aria-live="polite">1</output>
+          <button type="button" data-step="1" aria-label="More">+</button>
+        </div>
+      </div>
+      <p class="muted small" id="qty-note"></p>
+      <dl class="totals">
+        <div><dt>Subtotal</dt><dd data-subtotal>{{priceText}}</dd></div>
+        <div><dt>Shipping</dt><dd>{{shippingText}}</dd></div>
+        <div class="grand"><dt>Total</dt><dd data-total>{{priceText}}</dd></div>
+      </dl>
+      <ul class="assure">
+        <li>Paid by UPI directly to <code>{{upiId}}</code></li>
+        <li>Dispatch in {{dispatchDays}}</li>
+        <li>Return if it doesn't match the photos</li>
+      </ul>
+    </aside>
+  </div>
+</main>
+
+<script src="/js/common.js" defer></script>
+<script src="/js/checkout.js" defer></script>
+</body>
+</html>

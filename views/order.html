@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+<meta name="robots" content="noindex">
+</head>
+<body class="page-flow">
+{{{headerMinimal}}}
+
+<main class="wrap flow narrow">
+  <p class="loading" id="loading">Loading your order…</p>
+  <p class="form-error" id="load-error" role="alert" hidden></p>
+
+  <section id="order" hidden>
+    <div class="card order-hero">
+      <div class="seal" id="seal" aria-hidden="true"></div>
+      <h1 id="headline"></h1>
+      <p id="subline" class="muted"></p>
+      <p class="small">Order <b data-f="id"></b></p>
+    </div>
+
+    <div class="card">
+      <h2 class="h-sm">Progress</h2>
+      <ol class="timeline" id="timeline"></ol>
+      <div id="tracking" class="tracking" hidden></div>
+    </div>
+
+    <div class="card order-details">
+      <div>
+        <h2 class="h-sm">Your order</h2>
+        <p><span data-f="product"></span> × <span data-f="qty"></span></p>
+        <dl class="totals">
+          <div><dt>Subtotal</dt><dd data-f="subtotal"></dd></div>
+          <div><dt>Shipping</dt><dd data-f="shipping"></dd></div>
+          <div class="grand"><dt>Total</dt><dd data-f="total"></dd></div>
+        </dl>
+        <p class="small muted" id="utr-line" hidden>UTR <code data-f="utr"></code></p>
+      </div>
+      <div>
+        <h2 class="h-sm">Shipping to</h2>
+        <address id="address"></address>
+      </div>
+    </div>
+
+    <p class="muted small center"><b>Save your order number</b> — with your mobile number it opens this page anytime from <a href="/track">Track order</a>.{{{questionsLink}}}</p>
+    <p class="center"><a class="link" href="/">Back to the shop</a></p>
+  </section>
+</main>
+
+<script src="/js/common.js" defer></script>
+<script src="/js/order.js" defer></script>
+</body>
+</html>

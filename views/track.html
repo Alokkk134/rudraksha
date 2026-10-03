@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+</head>
+<body class="page-flow">
+{{{header}}}
+
+<main class="wrap flow narrow">
+  <form class="card form track-card" id="track" novalidate>
+    <h1>Track your order</h1>
+    <p class="muted">Enter the order number shown after checkout (it looks like <b>RN-ABC123</b>) and the mobile number you ordered with.</p>
+    <div class="field">
+      <label for="order-id">Order number</label>
+      <input id="order-id" name="id" autocomplete="off" autocapitalize="characters" required maxlength="12" placeholder="RN-ABC123">
+    </div>
+    <div class="field">
+      <label for="phone">Mobile number</label>
+      <div class="prefix"><span>+91</span><input id="phone" name="phone" type="tel" inputmode="numeric" autocomplete="tel-national" required maxlength="14"></div>
+    </div>
+    <p class="form-error" id="track-error" role="alert" hidden></p>
+    <button class="btn btn-block" type="submit">Show my order</button>
+    <p class="fine">Paid but didn't enter your UTR? Look up your order here and you can enter it on the next page.</p>
+  </form>
+</main>
+
+{{{footer}}}
+<script src="/js/common.js" defer></script>
+<script src="/js/track.js" defer></script>
+</body>
+</html>

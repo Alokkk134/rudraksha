@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+{{{head}}}
+<meta name="robots" content="noindex">
+</head>
+<body class="page-flow admin">
+<header class="site-header is-minimal"><div class="wrap header-inner">
+  <a class="brand" href="/admin"><span>{{brand}} <small>Orders</small></span></a>
+  <button class="btn btn-small btn-ghost" id="logout" hidden>Log out</button>
+</div></header>
+
+<main class="wrap flow">
+  <form class="card login" id="login" hidden>
+    <h1>Admin login</h1>
+    <input type="password" id="password" autocomplete="current-password" placeholder="Password" aria-label="Password">
+    <button class="btn btn-block" type="submit">Log in</button>
+    <p class="form-error" id="login-error" role="alert" hidden></p>
+  </form>
+
+  <section id="dash" hidden>
+    <div class="stock-row" id="stock"></div>
+    <div class="tabs" role="tablist" id="tabs">
+      <button data-filter="verifying" class="is-active">Check payment <span></span></button>
+      <button data-filter="paid">To ship <span></span></button>
+      <button data-filter="awaiting_payment">Waiting to pay <span></span></button>
+      <button data-filter="shipped">Shipped <span></span></button>
+      <button data-filter="all">All <span></span></button>
+    </div>
+    <p class="muted small" id="hint"></p>
+    <div id="orders" class="orders"></div>
+  </section>
+</main>
+
+<script src="/js/common.js" defer></script>
+<script src="/js/admin.js" defer></script>
+</body>
+</html>
