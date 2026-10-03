@@ -17,6 +17,13 @@ const VIEW_FILES = {
   '404.html': path.join(__dirname, '..', 'views', '404.html'),
 };
 const cache = new Map();
+
+// Changes whenever styles.css changes, so browsers fetch the new file instead of a cached one.
+let cssVersion = '1';
+try {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'css', 'styles.css'));
+  cssVersion = require('crypto').createHash('md5').update(css).digest('hex').slice(0, 8);
+} catch {}
 const isDev = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 
 const esc = (s) =>
@@ -152,7 +159,7 @@ function head(title, description) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..600&family=Manrope:wght@400;500;600;700&family=Tiro+Devanagari+Sanskrit&display=swap">
-<link rel="stylesheet" href="/css/styles.css">`;
+<link rel="stylesheet" href="/css/styles.css?v=${cssVersion}">`;
 }
 
 // ---------- index blocks ----------
