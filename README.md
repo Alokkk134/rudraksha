@@ -9,7 +9,7 @@ npm install
 npm start
 ```
 
-Open http://localhost:3000. The admin page is at http://localhost:3000/admin. Its password is `ADMIN_PASSWORD` in the `.env` file.
+Open http://localhost:3000. The admin page is at http://localhost:3000/kingalok. Its password is `ADMIN_PASSWORD` in the `.env` file.
 
 ## Before going live
 
@@ -32,9 +32,9 @@ On your own computer the site stores orders in `data/orders.json` instead, so no
 
 ## Handling an order
 
-1. Open /admin → **Check payment**. Orders where the buyer has entered a UTR appear here.
+1. Open /kingalok → **Check payment**. Orders where the buyer has entered a UTR appear here.
 2. In FamPay, find a payment with that UTR and **the exact amount**.
-3. In /admin → **Check payment**, press **Confirm payment received**. The buyer sees it on their order page (Track order).
+3. In /kingalok → **Check payment**, press **Confirm payment received**. The buyer sees it on their order page (Track order).
 4. After shipping, open **To ship**, enter the courier and tracking number, and press **Mark shipped**.
 5. If no matching payment arrived, press **Cancel…** and give a reason. The bead goes back into stock.
 

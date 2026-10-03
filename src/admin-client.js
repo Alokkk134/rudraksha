@@ -24,7 +24,7 @@
 
   async function load() {
     try {
-      data = await RN.api('/api/admin/orders');
+      data = await RN.api('/api/kingalok/orders');
     } catch (err) {
       if (err.status === 401) return showLogin();
       alert(err.message);
@@ -167,7 +167,7 @@ ${editing === o.id ? editForm(o) : `<div class="order-cols">
 
     btn.disabled = true;
     try {
-      await RN.api(`/api/admin/orders/${encodeURIComponent(id)}`, { method: 'POST', body });
+      await RN.api(`/api/kingalok/orders/${encodeURIComponent(id)}`, { method: 'POST', body });
       await load();
     } catch (err) {
       alert(err.message);
@@ -184,7 +184,7 @@ ${editing === o.id ? editForm(o) : `<div class="order-cols">
     const btn = form.querySelector('[type=submit]');
     btn.disabled = true;
     try {
-      await RN.api(`/api/admin/orders/${encodeURIComponent(form.dataset.edit)}`, {
+      await RN.api(`/api/kingalok/orders/${encodeURIComponent(form.dataset.edit)}`, {
         method: 'POST',
         body: {
           action: 'edit',
@@ -211,7 +211,7 @@ ${editing === o.id ? editForm(o) : `<div class="order-cols">
     const btn = form.querySelector('button');
     btn.disabled = true;
     try {
-      await RN.api('/api/admin/stock', { method: 'POST', body: { slug: form.dataset.slug, stock: Number(form.stock.value) } });
+      await RN.api('/api/kingalok/stock', { method: 'POST', body: { slug: form.dataset.slug, stock: Number(form.stock.value) } });
       await load();
     } catch (err) {
       alert(err.message);
@@ -231,7 +231,7 @@ ${editing === o.id ? editForm(o) : `<div class="order-cols">
     const err = $('#login-error');
     err.hidden = true;
     try {
-      await RN.api('/api/admin/login', { method: 'POST', body: { password: $('#password').value } });
+      await RN.api('/api/kingalok/login', { method: 'POST', body: { password: $('#password').value } });
       $('#password').value = '';
       load();
     } catch (ex) {
@@ -241,7 +241,7 @@ ${editing === o.id ? editForm(o) : `<div class="order-cols">
   });
 
   $('#logout').addEventListener('click', async () => {
-    await RN.api('/api/admin/logout', { method: 'POST' });
+    await RN.api('/api/kingalok/logout', { method: 'POST' });
     showLogin();
   });
 

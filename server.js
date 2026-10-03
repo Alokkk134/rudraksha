@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const path = require('path');
+const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 
@@ -139,7 +140,14 @@ app.get('/checkout/:slug', h(async (req, res) => {
 app.get('/pay/:id', (req, res) => res.send(renderPage('pay.html')));
 app.get('/order/:id', (req, res) => res.send(renderPage('order.html')));
 app.get('/track', (req, res) => res.send(renderPage('track.html')));
-app.get('/admin', (req, res) => res.send(renderPage('admin.html')));
+// The admin page lives at an unlisted path. Its script is served from here
+// (not /public) so nothing in the public files points to it.
+const ADMIN_PATH = '/kingalok';
+const ADMIN_SCRIPT = fs.readFileSync(path.join(__dirname, 'src', 'admin-client.js'), 'utf8');
+app.get(ADMIN_PATH, (req, res) => {
+  res.set('X-Robots-Tag', 'noindex, nofollow').send(renderPage('admin.html'));
+});
+app.get(ADMIN_PATH + '/app.js', (req, res) => res.type('application/javascript').set('Cache-Control', 'no-cache').send(ADMIN_SCRIPT));
 
 app.use(express.static(path.join(__dirname, 'public'), { index: false, maxAge: '1h' }));
 
@@ -281,7 +289,7 @@ function requireAdmin(req, res, next) {
   res.status(401).json({ error: 'Please log in.' });
 }
 
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/kingalok/login', (req, res) => {
   if (rateLimit('login:' + req.ip, 10, 15 * 60 * 1000)) {
     return res.status(429).json({ error: 'Too many attempts. Wait 15 minutes.' });
   }
@@ -302,12 +310,12 @@ app.post('/api/admin/login', (req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/admin/logout', (req, res) => {
+app.post('/api/kingalok/logout', (req, res) => {
   res.set('Set-Cookie', `${COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`);
   res.json({ ok: true });
 });
 
-app.get('/api/admin/orders', requireAdmin, h(async (req, res) => {
+app.get('/api/kingalok/orders', requireAdmin, h(async (req, res) => {
   const orders = await store.all();
   const products = await getProducts();
   const lefts = await Promise.all(products.map(available));
@@ -319,7 +327,7 @@ app.get('/api/admin/orders', requireAdmin, h(async (req, res) => {
   });
 }));
 
-app.post('/api/admin/stock', requireAdmin, h(async (req, res) => {
+app.post('/api/kingalok/stock', requireAdmin, h(async (req, res) => {
   const p = await productBySlug(req.body.slug);
   if (!p) return res.status(400).json({ error: 'Unknown product.' });
   const stock = Number(req.body.stock);
@@ -346,7 +354,7 @@ const TRANSITIONS = {
   cancel: { from: ['awaiting_payment', 'verifying', 'paid', 'expired'], to: 'cancelled' },
 };
 
-app.post('/api/admin/orders/:id', requireAdmin, h(async (req, res) => {
+app.post('/api/kingalok/orders/:id', requireAdmin, h(async (req, res) => {
   const o = await store.get(req.params.id);
   if (!o) return res.status(404).json({ error: 'Order not found.' });
 
