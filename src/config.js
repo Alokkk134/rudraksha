@@ -38,12 +38,21 @@ const products = [
     price: 7700,
     stock: 1,
     badge: 'Only piece',
-    summary:
-      'Two rudraksha beads joined by nature, with a third small bead growing from them. One of the rarest forms a rudraksha takes.',
+    summary: 'Two rudraksha joined together, with a small third bead on top. It is very hard to find.',
     description: [
-      'A Gauri Shankar Ganesh forms when two beads grow fused together on the tree and a third, smaller bead — the Ganesh — forms on them. Such beads appear only rarely in a harvest.',
-      'In tradition the three beads stand for Shiva, Parvati and their son Ganesha, together as one family. It is kept in the puja room or worn for harmony and unity in the home.',
-      'This is the only piece we have. It is the exact bead in the photos.',
+      'The two big beads are Shiva and Parvati. The small one on top is Ganesha. A whole family in one bead.',
+    ],
+    // Shown under "Benefits (as per tradition)"
+    benefits: [
+      'Peace and unity in the family',
+      'Love and understanding between husband and wife',
+      'Ganesha’s blessing for new starts and removing obstacles',
+    ],
+    // Shown under "Why buy from us"
+    whyUs: [
+      'You get this exact bead — we have only one',
+      'Natural from Nepal, not glued',
+      'Lab certificate comes with it',
     ],
     // Fill these in to show them on the site. Anything left null is hidden.
     specs: {
@@ -64,12 +73,19 @@ const products = [
     price: 1100,
     stock: 9,
     badge: 'Limited',
-    summary:
-      'Two rudraksha beads grown naturally joined as one. Traditionally the bead of Shiva and Parvati.',
+    summary: 'Two rudraksha that grew joined on the tree. The bead of Shiva and Parvati.',
     description: [
-      'A Gauri Shankar is two rudraksha beads that grew fused together on the tree. Joined beads like these are uncommon, which is why they are prized.',
-      'In tradition it stands for the union of Shiva and Parvati. It is worn or kept in the puja room for harmony between partners and within the family.',
-      'We have nine of these beads, all from Nepal. Nature shapes each one a little differently, so the bead you receive will be very close to, but not identical with, the one in the photos.',
+      'Each bead is shaped by nature, so yours will look very close to the photo but not exactly the same.',
+    ],
+    benefits: [
+      'Love and trust between husband and wife',
+      'Harmony at home',
+      'Often worn by those wishing for a good marriage',
+    ],
+    whyUs: [
+      'Natural from Nepal, not glued',
+      'Lab certificate with every bead',
+      'Only 9 pieces available',
     ],
     specs: {
       Origin: 'Nepal',

@@ -665,6 +665,59 @@ summary:focus-visible {
 .product-info p:not(.lead):not(.eyebrow):not(.price):not(.hindi):not(.stock) {
   color: var(--ink-2);
 }
+.points {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.4rem 0 0;
+}
+.points > div {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  padding: 1rem 1.1rem;
+}
+.points h4 {
+  margin: 0 0 0.6rem;
+  font: 700 0.78rem/1.2 var(--sans);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.points h4 span {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  color: var(--muted);
+}
+.points ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+}
+.points li {
+  position: relative;
+  padding-left: 1.2rem;
+}
+.points li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--sindoor);
+}
+@media (max-width: 640px) {
+  .points {
+    grid-template-columns: 1fr;
+  }
+}
 .specs {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

@@ -195,6 +195,10 @@ function productSection(p, i, left) {
   ${stockLine(p, left)}
   <p class="lead">${esc(p.summary)}</p>
   ${p.description.map((d) => `<p>${esc(d)}</p>`).join('')}
+  <div class="points">
+    ${p.benefits?.length ? `<div><h4>Benefits <span>(as per tradition)</span></h4><ul>${p.benefits.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
+    ${p.whyUs?.length ? `<div><h4>Why buy from us</h4><ul>${p.whyUs.map((b) => `<li>${esc(b)}</li>`).join('')}</ul></div>` : ''}
+  </div>
   ${specs ? `<dl class="specs">${specs}</dl>` : ''}
   <div class="buy-row">${buy}${wa ? `<a class="btn btn-ghost" href="${esc(wa)}" target="_blank" rel="noopener">See it on video call</a>` : ''}</div>
   <ul class="assure">
