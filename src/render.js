@@ -6,17 +6,26 @@ const path = require('path');
 const { site } = require('./config');
 const STATES = require('./states');
 
-const VIEWS = path.join(__dirname, '..', 'views');
+// Each view is listed with a literal path so Vercel's bundler includes the file.
+const VIEW_FILES = {
+  'index.html': path.join(__dirname, '..', 'views', 'index.html'),
+  'checkout.html': path.join(__dirname, '..', 'views', 'checkout.html'),
+  'pay.html': path.join(__dirname, '..', 'views', 'pay.html'),
+  'order.html': path.join(__dirname, '..', 'views', 'order.html'),
+  'track.html': path.join(__dirname, '..', 'views', 'track.html'),
+  'admin.html': path.join(__dirname, '..', 'views', 'admin.html'),
+  '404.html': path.join(__dirname, '..', 'views', '404.html'),
+};
 const cache = new Map();
-const isProd = process.env.NODE_ENV === 'production';
+const isDev = !process.env.VERCEL && process.env.NODE_ENV !== 'production';
 
 const esc = (s) =>
   String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const inr = (n) => '₹' + Number(n).toLocaleString('en-IN');
 
 function readView(name) {
-  if (isProd && cache.has(name)) return cache.get(name);
-  const html = fs.readFileSync(path.join(VIEWS, name), 'utf8');
+  if (!isDev && cache.has(name)) return cache.get(name);
+  const html = fs.readFileSync(VIEW_FILES[name], 'utf8');
   cache.set(name, html);
   return html;
 }
@@ -246,8 +255,7 @@ function renderPage(name, data = {}) {
   };
 
   if (name === 'index.html') {
-    const { products, available } = data;
-    const lefts = products.map(available);
+    const { products, lefts } = data;
     const total = products.reduce((s, p) => s + p.stock, 0);
     const totalLeft = lefts.reduce((s, n) => s + n, 0);
     const minPrice = Math.min(...products.map((p) => p.price));

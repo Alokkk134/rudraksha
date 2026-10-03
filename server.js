@@ -1,7 +1,6 @@
 require('dotenv').config();
 
 const path = require('path');
-const fs = require('fs');
 const crypto = require('crypto');
 const express = require('express');
 
@@ -12,7 +11,8 @@ const { renderPage } = require('./src/render');
 
 const PORT = Number(process.env.PORT || 3000);
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
-const SESSION_SECRET = process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex');
+// Every Vercel instance must sign cookies with the same key, so fall back to one derived from the password.
+const SESSION_SECRET = process.env.SESSION_SECRET || crypto.createHash('sha256').update('rn-session:' + ADMIN_PASSWORD).digest('hex');
 
 if (!ADMIN_PASSWORD || ADMIN_PASSWORD === 'change-this-to-a-long-password') {
   console.warn('[admin] Set ADMIN_PASSWORD in .env — the admin page is locked until you do.');
@@ -37,20 +37,20 @@ app.use((req, res, next) => {
 // ---------- helpers ----------
 
 const productBySlug = (slug) => products.find((p) => p.slug === slug) || null;
-const available = (p) => Math.max(0, p.stock - store.heldQty(p.slug));
+const available = async (p) => Math.max(0, p.stock - (await store.heldQty(p.slug)));
+
+// Express 4 doesn't catch errors from async handlers on its own.
+const h = (fn) => (req, res, next) => fn(req, res, next).catch(next);
 
 const hits = new Map();
 function rateLimit(key, max, windowMs) {
   const now = Date.now();
+  if (hits.size > 5000) hits.clear();
   const list = (hits.get(key) || []).filter((t) => now - t < windowMs);
   list.push(now);
   hits.set(key, list);
   return list.length > max;
 }
-setInterval(() => {
-  const cutoff = Date.now() - 60 * 60 * 1000;
-  for (const [k, list] of hits) if (list.every((t) => t < cutoff)) hits.delete(k);
-}, 10 * 60 * 1000).unref();
 
 const STATES = require('./src/states');
 
@@ -109,8 +109,8 @@ function publicOrder(o) {
   };
 }
 
-function orderFromRequest(req, res) {
-  const o = store.get(req.params.id);
+async function orderFromRequest(req, res) {
+  const o = await store.get(req.params.id);
   const t = String(req.query.t || '');
   if (!o || t.length !== o.token.length || !crypto.timingSafeEqual(Buffer.from(t), Buffer.from(o.token))) {
     res.status(404).json({ error: 'Order not found.' });
@@ -121,12 +121,15 @@ function orderFromRequest(req, res) {
 
 // ---------- pages ----------
 
-app.get('/', (req, res) => res.send(renderPage('index.html', { products, available })));
-app.get('/checkout/:slug', (req, res) => {
+app.get('/', h(async (req, res) => {
+  const lefts = await Promise.all(products.map(available));
+  res.send(renderPage('index.html', { products, lefts }));
+}));
+app.get('/checkout/:slug', h(async (req, res) => {
   const p = productBySlug(req.params.slug);
   if (!p) return res.redirect('/');
-  res.send(renderPage('checkout.html', { product: p, available: available(p) }));
-});
+  res.send(renderPage('checkout.html', { product: p, available: await available(p) }));
+}));
 app.get('/pay/:id', (req, res) => res.send(renderPage('pay.html')));
 app.get('/order/:id', (req, res) => res.send(renderPage('order.html')));
 app.get('/track', (req, res) => res.send(renderPage('track.html')));
@@ -136,11 +139,12 @@ app.use(express.static(path.join(__dirname, 'public'), { index: false, maxAge: '
 
 // ---------- public API ----------
 
-app.get('/api/products', (req, res) => {
-  res.json(products.map((p) => ({ slug: p.slug, name: p.name, price: p.price, available: available(p) })));
-});
+app.get('/api/products', h(async (req, res) => {
+  const lefts = await Promise.all(products.map(available));
+  res.json(products.map((p, i) => ({ slug: p.slug, name: p.name, price: p.price, available: lefts[i] })));
+}));
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', h(async (req, res) => {
   if (rateLimit('order:' + req.ip, 8, 60 * 60 * 1000)) {
     return res.status(429).json({ error: 'Too many orders from your connection. Please try again later.' });
   }
@@ -152,23 +156,19 @@ app.post('/api/orders', (req, res) => {
   if (Object.keys(errors).length) return res.status(400).json({ error: 'Please fix the highlighted fields.', fields: errors });
   if (!Number.isInteger(qty) || qty < 1) return res.status(400).json({ error: 'Choose a quantity.' });
 
-  // A buyer who goes back and orders again shouldn't hold two reservations.
-  for (const o of store.all()) {
-    if (o.productSlug === p.slug && o.phone === data.phone && o.status === 'awaiting_payment' && o.expiresAt > Date.now()) {
-      store.update(o.id, { status: 'replaced' });
+  const result = await store.withLock('stock:' + p.slug, async () => {
+    // A buyer who goes back and orders again shouldn't hold two reservations.
+    for (const o of await store.all()) {
+      if (o.productSlug === p.slug && o.phone === data.phone && o.status === 'awaiting_payment') {
+        await store.update(o.id, { status: 'replaced' });
+      }
     }
-  }
 
-  const left = available(p);
-  if (qty > left) {
-    return res.status(409).json({
-      error: left === 0 ? 'Sorry, this bead was just reserved by another buyer.' : `Only ${left} left. Please lower the quantity.`,
-      available: left,
-    });
-  }
+    const left = await available(p);
+    if (qty > left) return { left };
 
-  const subtotal = p.price * qty;
-  const order = store.create({
+    const subtotal = p.price * qty;
+    return { order: await store.create({
     productSlug: p.slug,
     productName: p.name,
     qty,
@@ -178,47 +178,55 @@ app.post('/api/orders', (req, res) => {
     total: subtotal + site.shippingFee,
     ...data,
     expiresAt: Date.now() + site.reservationMinutes * 60 * 1000,
+    }) };
   });
 
-  res.status(201).json({ id: order.id, token: order.token });
-});
+  if (!result.order) {
+    const left = result.left;
+    return res.status(409).json({
+      error: left === 0 ? 'Sorry, this bead was just reserved by another buyer.' : `Only ${left} left. Please lower the quantity.`,
+      available: left,
+    });
+  }
+  res.status(201).json({ id: result.order.id, token: result.order.token });
+}));
 
 // Buyers look up their order by order ID + the mobile number they used.
-app.post('/api/track', (req, res) => {
+app.post('/api/track', h(async (req, res) => {
   if (rateLimit('track:' + req.ip, 15, 15 * 60 * 1000)) {
     return res.status(429).json({ error: 'Too many attempts. Please wait 15 minutes.' });
   }
   const id = String(req.body.id || '').trim().toUpperCase().replace(/^(RN)?-?/, 'RN-');
   const phone = String(req.body.phone || '').replace(/[\s-]/g, '').replace(/^(\+?91|0)(?=\d{10}$)/, '');
-  const o = store.get(id);
+  const o = await store.get(id);
   if (!o || o.phone !== phone || o.status === 'replaced') {
     return res.status(404).json({ error: 'No order found with that order number and mobile number.' });
   }
   res.json({ id: o.id, token: o.token });
-});
+}));
 
-app.get('/api/orders/:id', (req, res) => {
-  const o = orderFromRequest(req, res);
+app.get('/api/orders/:id', h(async (req, res) => {
+  const o = await orderFromRequest(req, res);
   if (o) res.json(publicOrder(o));
-});
+}));
 
-app.get('/api/orders/:id/qr.svg', async (req, res) => {
-  const o = orderFromRequest(req, res);
+app.get('/api/orders/:id/qr.svg', h(async (req, res) => {
+  const o = await orderFromRequest(req, res);
   if (!o) return;
   res.type('image/svg+xml').set('Cache-Control', 'private, max-age=600').send(await qrSvg(o));
-});
+}));
 
-app.get('/api/orders/:id/qr.png', async (req, res) => {
-  const o = orderFromRequest(req, res);
+app.get('/api/orders/:id/qr.png', h(async (req, res) => {
+  const o = await orderFromRequest(req, res);
   if (!o) return;
   res
     .type('image/png')
     .set('Content-Disposition', `attachment; filename="pay-${o.id}.png"`)
     .send(await qrPng(o));
-});
+}));
 
-app.post('/api/orders/:id/utr', (req, res) => {
-  const o = orderFromRequest(req, res);
+app.post('/api/orders/:id/utr', h(async (req, res) => {
+  const o = await orderFromRequest(req, res);
   if (!o) return;
   if (rateLimit('utr:' + o.id, 10, 60 * 60 * 1000)) {
     return res.status(429).json({ error: 'Too many attempts. Please contact us.' });
@@ -230,18 +238,18 @@ app.post('/api/orders/:id/utr', (req, res) => {
   if (!/^\d{12}$/.test(utr)) {
     return res.status(400).json({ error: 'The UTR / UPI reference number is 12 digits. Check your UPI app’s payment details.' });
   }
-  const other = store.findByUtr(utr);
+  const other = await store.findByUtr(utr);
   if (other && other.id !== o.id) {
     return res.status(409).json({ error: 'This UTR is already used for another order. Please check the number.' });
   }
 
   // If the reservation lapsed, the bead may have gone to someone else meanwhile.
   const p = productBySlug(o.productSlug);
-  const stockConflict = o.status === 'expired' && available(p) < o.qty;
+  const stockConflict = o.status === 'expired' && (await available(p)) < o.qty;
 
-  const updated = store.update(o.id, { status: 'verifying', utr, utrAt: Date.now(), stockConflict });
+  const updated = await store.update(o.id, { status: 'verifying', utr, utrAt: Date.now(), stockConflict });
   res.json(publicOrder(updated));
-});
+}));
 
 // ---------- admin ----------
 
@@ -292,13 +300,15 @@ app.post('/api/admin/logout', (req, res) => {
   res.json({ ok: true });
 });
 
-app.get('/api/admin/orders', requireAdmin, (req, res) => {
+app.get('/api/admin/orders', requireAdmin, h(async (req, res) => {
+  const orders = await store.all();
+  const lefts = await Promise.all(products.map(available));
   res.json({
-    orders: store.all().filter((o) => o.status !== 'replaced'),
-    stock: products.map((p) => ({ slug: p.slug, name: p.name, stock: p.stock, available: available(p) })),
+    orders: orders.filter((o) => o.status !== 'replaced'),
+    stock: products.map((p, i) => ({ slug: p.slug, name: p.name, stock: p.stock, available: lefts[i] })),
     upiId: site.upiId,
   });
-});
+}));
 
 const TRANSITIONS = {
   confirm: { from: ['verifying', 'awaiting_payment', 'expired'], to: 'paid' },
@@ -307,8 +317,8 @@ const TRANSITIONS = {
   cancel: { from: ['awaiting_payment', 'verifying', 'paid', 'expired'], to: 'cancelled' },
 };
 
-app.post('/api/admin/orders/:id', requireAdmin, (req, res) => {
-  const o = store.get(req.params.id);
+app.post('/api/admin/orders/:id', requireAdmin, h(async (req, res) => {
+  const o = await store.get(req.params.id);
   if (!o) return res.status(404).json({ error: 'Order not found.' });
   const t = TRANSITIONS[req.body.action];
   if (!t) return res.status(400).json({ error: 'Unknown action.' });
@@ -322,16 +332,21 @@ app.post('/api/admin/orders/:id', requireAdmin, (req, res) => {
   if (req.body.action === 'cancel') changes.cancelReason = clean(req.body.reason, 200);
   if (req.body.action === 'confirm') changes.stockConflict = false;
 
-  const updated = store.update(o.id, changes, req.body.action === 'cancel' ? changes.cancelReason : undefined);
+  const updated = await store.update(o.id, changes, req.body.action === 'cancel' ? changes.cancelReason : undefined);
   res.json({ order: updated });
-});
-
-// ---------- background ----------
-
-setInterval(() => {
-  store.expireStale();
-}, 60 * 1000).unref();
+}));
 
 app.use((req, res) => res.status(404).send(renderPage('404.html')));
 
-app.listen(PORT, () => console.log(`Store running at http://localhost:${PORT}`));
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Something went wrong on our side. Please try again.' });
+});
+
+// Vercel imports the app; on your own computer it listens on a port.
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => console.log(`Store running at http://localhost:${PORT} (orders stored in ${store.kind})`));
+}
+
+module.exports = app;

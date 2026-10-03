@@ -17,7 +17,18 @@ Open http://localhost:3000. The admin page is at http://localhost:3000/admin. It
 2. **Bead details:** in `src/config.js`, fill in `Size`, `Weight` and `Certificate` (lab report number). Anything left `null` stays hidden.
 3. **Check the policies:** `shippingFee`, `shippingNote`, `dispatchDays` and `returnsPolicy` in `src/config.js`.
 4. **WhatsApp (optional):** set `whatsapp` to show a chat button and a "See it on video call" button.
-5. **Hosting:** set `SITE_URL` to your real domain. Keep `DATA_DIR` on a disk that survives restarts, because all orders are stored there.
+
+## Deploy on Vercel
+
+1. In Vercel, click **Add New → Project** and import this GitHub repo. Leave the build settings as they are.
+2. Before or after the first deploy, open the project → **Storage** → **Create Database** → **Upstash for Redis** (free plan) → connect it to this project. This adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you. **Orders are not saved without it.**
+3. Go to **Settings → Environment Variables** and add:
+   - `ADMIN_PASSWORD`: your admin password
+   - `SESSION_SECRET`: any long random text
+4. Go to **Deployments** → the three dots on the latest one → **Redeploy**, so the new settings take effect.
+5. Optional: go to **Settings → Domains** to add your own domain. Vercel shows you the DNS records to copy into your domain provider's site.
+
+On your own computer the site stores orders in `data/orders.json` instead, so no database is needed there.
 
 ## Handling an order
 
