@@ -30,7 +30,7 @@ app.use((req, res, next) => {
     'X-Frame-Options': 'DENY',
     'Referrer-Policy': 'same-origin',
     'Content-Security-Policy':
-      "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+      "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com; connect-src 'self' https://va.vercel-analytics.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
   });
   next();
 });
